@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import './globals.css'
 
-// export const metadata: Metadata = {
-//   title: 'Michigan Bands',
-// }
+export const metadata: Metadata = {
+  title: 'Michigan Bands',
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
