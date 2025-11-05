@@ -44,11 +44,8 @@ export default function ClientHome({ initialBands }: { initialBands: BandRow[] }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <h1 className="text-xl font-bold tracking-tight">Michigan Bands</h1>
-        </div>
-      </header>
+      {/* <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
+      </header> */}
 
       <section className="mx-auto max-w-6xl px-4 py-6">
         <div className="grid gap-3 md:grid-cols-3">
