@@ -1,5 +1,5 @@
 export type Band = {
-  id: string
+  id: string | number
   name: string
   city: string
   region:
@@ -12,6 +12,8 @@ export type Band = {
     | 'UP'
   genres: string[]
   links?: { website?: string; instagram?: string; spotify?: string }
+  slug?: string | null
+  photo_url?: string | null
 }
 
 export const BANDS: Band[] = [

@@ -1,7 +1,5 @@
-// src/app/ClientHome.tsx
 'use client'
-
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useDeferredValue } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import SearchBar from '@/components/SearchBar'
 import BandCard from '@/components/BandCard'
@@ -12,6 +10,7 @@ const REGIONS = [
   'All Regions','Detroit Metro','Ann Arbor','West MI',
   'Lansing/Jackson','Flint/Saginaw','Northern MI','UP',
 ] as const
+const REGION_SET = new Set(REGIONS)
 
 export default function ClientHome({
   initialBands,
@@ -27,51 +26,46 @@ export default function ClientHome({
 
   const [q, setQ] = useState(initialQuery)
   const [region, setRegion] = useState<string>(initialRegion)
+  const debouncedQ = useDeferredValue(q) // smoother typing
 
-  // Keep local state in sync if user navigates with back/forward
+  // Sync when user uses back/forward or external links
   useEffect(() => {
-    const qP = params.get('q') ?? ''
-    const rP = params.get('region') ?? 'All Regions'
-    if (qP !== q) setQ(qP)
-    if (rP !== region) setRegion(rP)
+    const qp = params.get('q') ?? ''
+    const rp = params.get('region') ?? 'All Regions'
+    if (qp !== q) setQ(qp)
+    if (rp !== region && REGION_SET.has(rp as any)) setRegion(rp)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params])
 
-  // Push state to URL (debounced for q)
+  // Push state to URL (250ms debounce via useDeferredValue)
   useEffect(() => {
-    const t = setTimeout(() => {
-      const next = new URLSearchParams()
-      if (q.trim()) next.set('q', q.trim())
-      if (region && region !== 'All Regions') next.set('region', region)
-      const qs = next.toString()
-      router.replace(qs ? `/?${qs}` : '/', { scroll: false })
-    }, 250)
-    return () => clearTimeout(t)
-  }, [q, region, router])
+    const next = new URLSearchParams()
+    if (debouncedQ.trim()) next.append('q', debouncedQ.trim())
+    if (region && region !== 'All Regions') next.append('region', region)
+    const qs = next.toString()
+    router.replace(qs ? `/?${qs}` : '/', { scroll: false })
+  }, [debouncedQ, region, router])
 
   const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase()
+    const needle = debouncedQ.trim().toLowerCase()
     return (initialBands ?? []).filter((b) => {
       const matchesRegion = region === 'All Regions' || b.region === region
-      const hay = `${b.name} ${b.city ?? ''} ${b.region ?? ''} ${(b.genres ?? []).join(' ')}`.toLowerCase()
+      const hay = `${b.name} ${b.city ?? ''} ${b.region ?? ''} ${(b.genres ?? []).join(' ')}`
+        .toLowerCase()
       return matchesRegion && (!needle || hay.includes(needle))
     })
-  }, [q, region, initialBands])
+  }, [debouncedQ, region, initialBands])
 
-  // helpers (unchanged) …
-  const toRegion = (r: string | null | undefined): Band['region'] => {
-    const allowed = [
-      'Detroit Metro','Ann Arbor','West MI','Lansing/Jackson','Flint/Saginaw','Northern MI','UP',
-    ] as const
-    return (allowed.includes(r as Band['region']) ? (r as Band['region']) : 'Detroit Metro')
-  }
+  const toRegion = (r: string | null | undefined): Band['region'] =>
+    (REGION_SET.has((r ?? '') as any) ? (r as Band['region']) : 'Detroit Metro')
+
   const toLinks = (l: Record<string, unknown> | null | undefined): Band['links'] | undefined => {
     if (!l) return undefined
     const obj = l as Record<string, unknown>
-    const website = typeof obj['website'] === 'string' ? obj['website'] as string : undefined
-    const instagram = typeof obj['instagram'] === 'string' ? obj['instagram'] as string : undefined
-    const spotify = typeof obj['spotify'] === 'string' ? obj['spotify'] as string : undefined
-    return { website, instagram, spotify }
+    const w = typeof obj['website'] === 'string' ? obj['website'] as string : undefined
+    const ig = typeof obj['instagram'] === 'string' ? obj['instagram'] as string : undefined
+    const sp = typeof obj['spotify'] === 'string' ? obj['spotify'] as string : undefined
+    return { website: w, instagram: ig, spotify: sp }
   }
 
   return (

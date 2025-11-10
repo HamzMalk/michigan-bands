@@ -1,51 +1,55 @@
 import { supabaseServer } from './supabase'
 
 export type BandRow = {
-  id: string
+  id: string | number
   name: string
   city: string | null
   region: string | null
   genres: string[] | null
   links: Record<string, unknown> | null
   photo_url: string | null
+  slug?: string | null
 }
 
-/** List bands with optional client-side text filter and region filter */
-export async function listBands(opts?: { region?: string; q?: string }) {
+export async function listBands(opts?: {
+  q?: string
+  region?: string
+  page?: number
+  pageSize?: number
+}) {
+  const page = Math.max(1, opts?.page ?? 1)
+  const pageSize = Math.min(60, Math.max(6, opts?.pageSize ?? 18))
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+
   const sb = supabaseServer()
+  let q = sb
+    .from('bands')
+    .select('*', { count: 'exact' })
+    .order('name', { ascending: true })
+    .range(from, to)
 
-  // base query
-  let query = sb.from('bands').select('*').order('name', { ascending: true })
   if (opts?.region && opts.region !== 'All Regions') {
-    query = query.eq('region', opts.region)
+    q = q.eq('region', opts.region)
   }
-
-  const { data, error } = await query
-  if (error) {
-    console.error('[bands] Supabase error:', {
-      message: error.message, details: (error as any).details, hint: (error as any).hint, code: (error as any).code
-    })
-    return [] as BandRow[]
-  }
-
-  const rows = (data ?? []) as BandRow[]
-
-  // optional local text filter
   if (opts?.q?.trim()) {
-    const needle = opts.q.toLowerCase()
-    return rows.filter(b => {
-      const hay = `${b.name} ${b.city ?? ''} ${b.region ?? ''} ${(b.genres ?? []).join(' ')}`
-        .toLowerCase()
-      return hay.includes(needle)
-    })
+    const needle = `%${opts.q.trim()}%`
+    q = q.or(`name.ilike.${needle},city.ilike.${needle},region.ilike.${needle}`)
   }
 
-  return rows
+  const { data, error, count } = await q
+  if (error) {
+    console.error('[listBands] error:', error)
+    return { data: [] as BandRow[], count: 0, page, pageSize }
+  }
+  return { data: (data ?? []) as BandRow[], count: count ?? 0, page, pageSize }
 }
 
 export async function getBandById(id: string) {
   const sb = supabaseServer()
-  const { data, error } = await sb.from('bands').select('*').eq('id', id).single()
+  const maybeNum = Number(id)
+  const idValue = Number.isFinite(maybeNum) ? maybeNum : id
+  const { data, error } = await sb.from('bands').select('*').eq('id', idValue).single()
   if (error) return null
   return data as BandRow
 }
