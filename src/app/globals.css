@@ -52,3 +52,17 @@ body {
 .chip-secondary:hover {
   background-color: color-mix(in oklab, var(--brand-secondary) 10%, white);
 }
+
+/* Subtle purple-tinted sticky header background */
+.header-tint {
+  background-color: color-mix(in oklab, var(--brand-primary) 12%, rgba(255 255 255 / 80%));
+  /* subtle purple border for the sticky header */
+  border-color: color-mix(in oklab, var(--brand-primary) 40%, #e5e7eb);
+}
+
+@media (prefers-color-scheme: dark) {
+  .header-tint {
+    /* deepen the border in dark mode for contrast */
+    border-color: color-mix(in oklab, var(--brand-primary) 45%, #262626);
+  }
+}

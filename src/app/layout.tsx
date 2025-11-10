@@ -30,7 +30,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen">
-        <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
+        <header className="sticky top-0 z-10 border-b header-tint backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
             <Link href="/" className="text-xl font-bold tracking-tight">Michigan Bands</Link>
             <nav className="flex items-center gap-4 text-sm">
