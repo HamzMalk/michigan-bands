@@ -125,6 +125,49 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
     ),
   }
 
+  async function fetchLinkPreview(target: string) {
+    try {
+      const controller = new AbortController()
+      const id = setTimeout(() => controller.abort(), 3000)
+      const res = await fetch(target, {
+        // cache preview for 1 hour to avoid hammering sites
+        next: { revalidate: 3600 },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; MichiganBandsBot/1.0)'
+        },
+        signal: controller.signal,
+      })
+      clearTimeout(id)
+      if (!res.ok) return null
+      const html = await res.text()
+      const pick = (pattern: RegExp) => {
+        const m = html.match(pattern)
+        return m?.[1]?.trim() || undefined
+      }
+      const meta = (name: string) => pick(new RegExp(`<meta[^>]+property=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'))
+        || pick(new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'))
+      const title = meta('og:title') || pick(/<title[^>]*>([^<]+)<\/title>/i)
+      const description = meta('og:description') || meta('description')
+      let image = meta('og:image')
+      const themeColor = meta('theme-color')
+      // link rel icon
+      let iconHref = pick(/<link[^>]+rel=["'](?:shortcut icon|icon)["'][^>]+href=["']([^"']+)["'][^>]*>/i)
+      // resolve relative images
+      const toAbs = (u?: string) => {
+        if (!u) return undefined
+        try { return new URL(u, target).toString() } catch { return undefined }
+      }
+      if (image) image = toAbs(image)
+      const icon = toAbs(iconHref) || toAbs('/favicon.ico')
+      const site = new URL(target)
+      return { title, description, image, icon, host: site.host.replace(/^www\./, ''), themeColor }
+    } catch {
+      return null
+    }
+  }
+
+  const websitePreview = websiteUrl ? await fetchLinkPreview(websiteUrl) : null
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6">
@@ -145,6 +188,39 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
       </div>
       {(websiteUrl || instagramUrl || spotifyEmbed || youtubeEmbed) && (
         <section className="mt-6 space-y-4">
+          {websiteUrl && (
+            <div
+              className="overflow-hidden rounded-xl border"
+              style={{ borderColor: websitePreview?.themeColor || 'var(--brand-primary)' } as React.CSSProperties}
+            >
+              <a href={websiteUrl} target="_blank" rel="noreferrer" className="flex gap-4 p-4 hover:bg-gray-50">
+                {/* thumbnail */}
+                {websitePreview?.image ? (
+                  <img src={websitePreview.image} alt="" className="h-20 w-32 rounded-md object-cover" />
+                ) : (
+                  <div className="flex h-20 w-32 items-center justify-center rounded-md bg-gray-100 text-gray-600">
+                    {Svg.globe}
+                  </div>
+                )}
+                {/* info */}
+                <div className="min-w-0">
+                  <div className="line-clamp-1 font-medium">
+                    {websitePreview?.title || websitePreview?.host || prettyHost(websiteUrl) || 'Website'}
+                  </div>
+                  {websitePreview?.description && (
+                    <p className="mt-1 line-clamp-2 text-sm text-gray-600">{websitePreview.description}</p>
+                  )}
+                  <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
+                    {websitePreview?.icon && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={websitePreview.icon} alt="" className="h-3.5 w-3.5 rounded" />
+                    )}
+                    <span>{prettyHost(websiteUrl)}</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          )}
           {youtubeEmbed && (
             <div className="overflow-hidden rounded-xl border">
               <iframe
@@ -174,25 +250,25 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
           )}
           <div className="flex flex-wrap gap-3">
             {websiteUrl && (
-              <a className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 hover:bg-gray-50" href={websiteUrl} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={websiteUrl} target="_blank" rel="noreferrer">
                 {Svg.globe}
                 <span>{prettyHost(websiteUrl) ?? 'Website'}</span>
               </a>
             )}
             {instagramUrl && (
-              <a className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 hover:bg-gray-50" href={instagramUrl} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={instagramUrl} target="_blank" rel="noreferrer">
                 {Svg.instagram}
                 <span>{instaHandle(instagramUrl)}</span>
               </a>
             )}
             {spotify && (
-              <a className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 hover:bg-gray-50" href={normUrl(spotify)} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={normUrl(spotify)} target="_blank" rel="noreferrer">
                 {Svg.spotify}
                 <span>Spotify</span>
               </a>
             )}
             {youtube && (
-              <a className="inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 hover:bg-gray-50" href={normUrl(youtube)} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={normUrl(youtube)} target="_blank" rel="noreferrer">
                 {Svg.youtube}
                 <span>YouTube</span>
               </a>

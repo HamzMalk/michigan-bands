@@ -9,6 +9,7 @@ export type BandRow = {
   links: Record<string, unknown> | null
   photo_url: string | null
   slug?: string | null
+  user_id?: string | null
 }
 
 export async function listBands(opts?: {

@@ -47,7 +47,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* filter bar (server form; submits via URL) */}
       <section className="mx-auto max-w-6xl px-4 py-6">
         <form action="/" method="get" className="grid gap-3 md:grid-cols-3">
@@ -63,7 +63,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
             {REGIONS.map((r) => <option key={r}>{r}</option>)}
           </select>
           <input type="hidden" name="page" value="1" />
-          <button className="rounded-xl bg-black px-3 py-2 text-white md:col-start-3">Search</button>
+          <button className="rounded-xl btn-primary px-3 py-2 md:col-start-3">Search</button>
         </form>
       </section>
 

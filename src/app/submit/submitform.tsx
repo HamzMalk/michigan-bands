@@ -33,13 +33,16 @@ export default function SubmitForm() {
       }
     }
 
-    const res = await fetch('/api/admin/add-band', {
+    const res = await fetch('/api/bands/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
     const json = await res.json()
-    if (!res.ok) { setStatus('error'); setMsg(json.error ?? 'Failed'); return }
+    if (!res.ok) {
+      if (res.status === 401) { setStatus('error'); setMsg('Please sign in to submit a band.'); return }
+      setStatus('error'); setMsg(json.error ?? 'Failed'); return
+    }
     setStatus('ok'); setMsg('Submitted! 🎉')
     setName(''); setCity(''); setRegion('Detroit Metro'); setGenres('')
     setWebsite(''); setInstagram(''); setSpotify('')
@@ -87,7 +90,7 @@ export default function SubmitForm() {
           </div>
         </div>
 
-        <button disabled={status==='saving'} className="rounded-xl bg-black px-4 py-2 text-white hover:bg-gray-800 disabled:opacity-60">
+        <button disabled={status==='saving'} className="rounded-xl btn-primary px-4 py-2 disabled:opacity-60">
           {status==='saving' ? 'Submitting…' : 'Submit'}
         </button>
 
