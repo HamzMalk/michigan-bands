@@ -49,22 +49,27 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
   return (
     <div className="min-h-screen">
       {/* filter bar (server form; submits via URL) */}
-      <section className="mx-auto max-w-6xl px-4 py-6">
-        <form action="/" method="get" className="grid gap-3 md:grid-cols-3">
-          <div className="md:col-span-2">
+      <section className="mx-auto max-w-6xl px-4 py-8">
+        <div className="card p-6 animate-rise">
+        <form action="/" method="get" className="grid gap-4 md:grid-cols-3">
+          <div className="input-wrap md:col-span-2">
+            <svg className="icon-left" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 104.207 12.03l4.256 4.257a.75.75 0 101.06-1.06l-4.257-4.257A6.75 6.75 0 0010.5 3.75zm-5.25 6.75a5.25 5.25 0 1110.5 0 5.25 5.25 0 01-10.5 0z" clipRule="evenodd" />
+            </svg>
             <input
               name="q"
               defaultValue={q}
               placeholder="Search by name, city, genre…"
-              className="w-full rounded-xl border px-3 py-2"
+              className="input input-shimmer with-icon w-full"
             />
           </div>
-          <select name="region" defaultValue={region} className="rounded-xl border bg-white px-3 py-2">
+          <select name="region" defaultValue={region} className="select w-full">
             {REGIONS.map((r) => <option key={r}>{r}</option>)}
           </select>
           <input type="hidden" name="page" value="1" />
-          <button className="rounded-xl btn-primary px-3 py-2 md:col-start-3">Search</button>
+          <button className="rounded-xl btn-primary px-3 py-2 md:col-start-3 shadow-sm">Search</button>
         </form>
+        </div>
       </section>
 
       {/* results grid */}
@@ -72,8 +77,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
         <div className="mb-3 text-sm text-gray-600">
           Found <span className="font-medium">{count}</span> band{count !== 1 ? 's' : ''} • Page {cur} / {totalPages}
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {data.map((b: BandRow) => (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {data.map((b: BandRow, i) => (
             <BandCard
               key={b.id}
               band={{
@@ -85,6 +90,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
                 links: toLinks(b.links),
                 slug: b.slug ?? null,
               }}
+              // slight stagger via inline style
+              style={{ animationDelay: `${i * 40}ms` } as React.CSSProperties}
             />
           ))}
         </div>
@@ -94,7 +101,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
           <Link
             href={mkUrl(Math.max(1, cur - 1))}
             aria-disabled={cur <= 1}
-            className={`rounded-lg border px-3 py-1.5 ${cur <= 1 ? 'pointer-events-none opacity-50' : 'hover:bg-gray-50'}`}
+            className={`chip-primary rounded-full px-3 py-1.5 ${cur <= 1 ? 'pointer-events-none opacity-50' : ''}`}
           >
             ← Prev
           </Link>
@@ -102,7 +109,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Sea
           <Link
             href={mkUrl(Math.min(totalPages, cur + 1))}
             aria-disabled={cur >= totalPages}
-            className={`rounded-lg border px-3 py-1.5 ${cur >= totalPages ? 'pointer-events-none opacity-50' : 'hover:bg-gray-50'}`}
+            className={`chip-primary rounded-full px-3 py-1.5 ${cur >= totalPages ? 'pointer-events-none opacity-50' : ''}`}
           >
             Next →
           </Link>

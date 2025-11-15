@@ -48,41 +48,41 @@ export default function BandEditor({ band }: { band: BandRow }) {
   }
 
   return (
-    <div className="rounded-2xl border bg-white p-4 shadow-sm">
+    <div className="card p-4 animate-rise">
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="mb-1 block text-sm font-medium">Name</label>
-          <input value={name} onChange={(e)=>setName(e.target.value)} className="w-full rounded-lg border px-3 py-2" />
+          <input value={name} onChange={(e)=>setName(e.target.value)} className="input w-full" />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">City</label>
-          <input value={city} onChange={(e)=>setCity(e.target.value)} className="w-full rounded-lg border px-3 py-2" />
+          <input value={city} onChange={(e)=>setCity(e.target.value)} className="input w-full" />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Region</label>
-          <select value={region} onChange={(e)=>setRegion(e.target.value)} className="w-full rounded-lg border px-3 py-2">
+          <select value={region} onChange={(e)=>setRegion(e.target.value)} className="select w-full">
             {REGIONS.map(r => <option key={r}>{r}</option>)}
           </select>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Genres (comma-separated)</label>
-          <input value={genres} onChange={(e)=>setGenres(e.target.value)} className="w-full rounded-lg border px-3 py-2" />
+          <input value={genres} onChange={(e)=>setGenres(e.target.value)} className="input w-full" />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Website</label>
-          <input value={website} onChange={(e)=>setWebsite(e.target.value)} className="w-full rounded-lg border px-3 py-2" />
+          <input value={website} onChange={(e)=>setWebsite(e.target.value)} className="input w-full" />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Instagram</label>
-          <input value={instagram} onChange={(e)=>setInstagram(e.target.value)} className="w-full rounded-lg border px-3 py-2" />
+          <input value={instagram} onChange={(e)=>setInstagram(e.target.value)} className="input w-full" />
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Spotify</label>
-          <input value={spotify} onChange={(e)=>setSpotify(e.target.value)} className="w-full rounded-lg border px-3 py-2" />
+          <input value={spotify} onChange={(e)=>setSpotify(e.target.value)} className="input w-full" />
         </div>
       </div>
       <div className="mt-4 flex items-center gap-3">
-        <button disabled={status==='saving'} onClick={onSave} className="rounded-xl btn-primary px-4 py-2 disabled:opacity-60">
+        <button disabled={status==='saving'} onClick={onSave} className="rounded-xl btn-primary px-4 py-2 disabled:opacity-60 shadow-sm">
           {status==='saving' ? 'Saving…' : 'Save'}
         </button>
         {status==='ok' && <span className="text-green-700">{msg}</span>}

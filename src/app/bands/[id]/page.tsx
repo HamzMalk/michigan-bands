@@ -27,6 +27,22 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const canonicalInstagramUrl = (u: string | undefined) => {
+    if (!u) return undefined
+    const raw = u.trim()
+    const lower = raw.toLowerCase()
+    if (lower.includes('instagram.com') || lower.includes('instagr.am')) {
+      return normUrl(raw)
+    }
+    // If user typed a handle like "@name" or just "name"
+    const handle = raw.startsWith('@') ? raw.slice(1) : raw
+    // Basic handle validation: letters, numbers, underscore, dot
+    if (/^[a-zA-Z0-9._]+$/.test(handle)) {
+      return `https://instagram.com/${handle}`
+    }
+    return normUrl(raw)
+  }
+
   const prettyHost = (u: string | undefined) => {
     if (!u) return undefined
     try {
@@ -98,7 +114,7 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
   }
 
   const websiteUrl = normUrl(website)
-  const instagramUrl = normUrl(instagram)
+  const instagramUrl = canonicalInstagramUrl(instagram)
   const spotifyEmbed = toSpotifyEmbed(spotify)
   const youtubeEmbed = toYouTubeEmbed(youtube)
 
@@ -168,23 +184,43 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
 
   const websitePreview = websiteUrl ? await fetchLinkPreview(websiteUrl) : null
 
+  const hasHero = Boolean((band as any).photo_url)
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6">
-        <Link href="/" className="text-sm text-gray-600 hover:underline">← Back to list</Link>
+      <div className="mb-4">
+        <Link href="/" className="chip-primary rounded-full px-3 py-1.5 text-sm">← Back to list</Link>
       </div>
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">{band.name}</h1>
-      <div className="mb-6 text-gray-700">
-        {(band.city || band.region) && (
-          <p>
-            {band.city ? <span className="font-medium">{band.city}</span> : null}
-            {band.city && band.region ? <span> • </span> : null}
+      {hasHero && (
+        <div className="mb-4 overflow-hidden rounded-2xl shadow-sm">
+          <div className="relative h-56 sm:h-72 md:h-80">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={(band as any).photo_url as string}
+              alt={`${band.name} cover`}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.45)] via-[rgba(0,0,0,0.2)] to-transparent" />
+            <div className="absolute bottom-3 left-4 sm:bottom-4 sm:left-6">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white drop-shadow-md">{band.name}</h1>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="card p-6 animate-rise">
+        {!hasHero && <h1 className="mb-2 text-3xl font-bold tracking-tight">{band.name}</h1>}
+        <div className="text-gray-700">
+          {(band.city || band.region) && (
+            <p>
+              {band.city ? <span className="font-medium">{band.city}</span> : null}
+              {band.city && band.region ? <span> • </span> : null}
             {band.region ? <span>{band.region}</span> : null}
           </p>
         )}
         {(band.genres ?? []).length > 0 && (
           <p className="mt-1 text-sm">Genres: {(band.genres ?? []).join(', ')}</p>
         )}
+        </div>
       </div>
       {(websiteUrl || instagramUrl || spotifyEmbed || youtubeEmbed) && (
         <section className="mt-6 space-y-4">
@@ -222,7 +258,7 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
             </div>
           )}
           {youtubeEmbed && (
-            <div className="overflow-hidden rounded-xl border">
+            <div className="card overflow-hidden">
               <iframe
                 title="YouTube"
                 src={youtubeEmbed}
@@ -236,7 +272,7 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
             </div>
           )}
           {spotifyEmbed && (
-            <div className="overflow-hidden rounded-xl border">
+            <div className="card overflow-hidden">
               <iframe
                 title="Spotify"
                 src={spotifyEmbed}
@@ -250,25 +286,25 @@ export default async function BandPage({ params }: { params: Promise<{ id: strin
           )}
           <div className="flex flex-wrap gap-3">
             {websiteUrl && (
-              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={websiteUrl} target="_blank" rel="noreferrer">
+              <a className="chip-secondary inline-flex items-center gap-2 rounded-full px-3 py-1.5" href={websiteUrl} target="_blank" rel="noreferrer">
                 {Svg.globe}
                 <span>{prettyHost(websiteUrl) ?? 'Website'}</span>
               </a>
             )}
             {instagramUrl && (
-              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={instagramUrl} target="_blank" rel="noreferrer">
+              <a className="chip-secondary inline-flex items-center gap-2 rounded-full px-3 py-1.5" href={instagramUrl} target="_blank" rel="noreferrer">
                 {Svg.instagram}
                 <span>{instaHandle(instagramUrl)}</span>
               </a>
             )}
             {spotify && (
-              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={normUrl(spotify)} target="_blank" rel="noreferrer">
+              <a className="chip-secondary inline-flex items-center gap-2 rounded-full px-3 py-1.5" href={normUrl(spotify)} target="_blank" rel="noreferrer">
                 {Svg.spotify}
                 <span>Spotify</span>
               </a>
             )}
             {youtube && (
-              <a className="inline-flex items-center gap-2 rounded-lg border border-green-700 text-green-700 px-3 py-1.5 hover:bg-green-50" href={normUrl(youtube)} target="_blank" rel="noreferrer">
+              <a className="chip-secondary inline-flex items-center gap-2 rounded-full px-3 py-1.5" href={normUrl(youtube)} target="_blank" rel="noreferrer">
                 {Svg.youtube}
                 <span>YouTube</span>
               </a>

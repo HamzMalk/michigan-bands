@@ -10,8 +10,12 @@ export async function POST(req: Request) {
     {
       cookies: {
         get(name: string) { return cookieStore.get(name)?.value },
-        set(name: string, value: string, options: any) { cookieStore.set(name, value, options) },
-        remove(name: string, options: any) { cookieStore.set(name, '', { ...options, maxAge: 0 }) },
+        set(name: string, value: string, options: Parameters<typeof cookieStore.set>[2]) {
+          cookieStore.set(name, value, options)
+        },
+        remove(name: string, options: Parameters<typeof cookieStore.set>[2]) {
+          cookieStore.set(name, '', { ...options, maxAge: 0 })
+        },
       },
     }
   )
@@ -32,8 +36,8 @@ export async function POST(req: Request) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
     return NextResponse.json({ ok: true })
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message ?? 'Unknown error' }, { status: 500 })
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Unknown error'
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
-

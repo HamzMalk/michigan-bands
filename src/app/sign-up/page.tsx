@@ -44,13 +44,13 @@ export default function SignUpPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-10">
       <h1 className="mb-6 text-2xl font-bold">Create your account</h1>
-      <form onSubmit={onSubmit} className="grid gap-3">
+      <form onSubmit={onSubmit} className="card grid gap-3 p-6 animate-rise">
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Display name"
-          className="w-full rounded-lg border px-3 py-2"
+          className="input w-full"
         />
         <input
           type="email"
@@ -58,7 +58,7 @@ export default function SignUpPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@example.com"
-          className="w-full rounded-lg border px-3 py-2"
+          className="input w-full"
         />
         <input
           type="password"
@@ -66,9 +66,9 @@ export default function SignUpPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          className="w-full rounded-lg border px-3 py-2"
+          className="input w-full"
         />
-        <button disabled={status==='saving'} className="rounded-xl btn-primary px-4 py-2 disabled:opacity-60">
+        <button disabled={status==='saving'} className="rounded-xl btn-primary px-4 py-2 disabled:opacity-60 shadow-sm">
           {status==='saving' ? 'Creating…' : 'Create account'}
         </button>
       </form>
